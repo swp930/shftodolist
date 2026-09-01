@@ -413,6 +413,22 @@ async function asyncMutateSheetWrapper() {
     );
 }
 
+async function asyncGetDataForRow() {
+    await rowLeftMost()
+}
+
+async function asyncGetDataForColumn() {
+    await columnTopMost()
+}
+
+async function asyncAddToEndOfRow() {
+    await addToEndOfRow()
+}
+
+async function asyncAddToEndOfColumn() {
+    await addToEndOfColumn()
+}
+
 async function mutateSheet(sheetId, cellNumber, text) {
     const res = await fetch('http://localhost:3000/mutate-sheet', {
         method: 'POST',
@@ -428,5 +444,61 @@ async function mutateSheet(sheetId, cellNumber, text) {
     if (!res.ok || !data.ok) {
         throw new Error(data.error || `Request failed: ${res.status}`);
     }
+    return data;
+}
+
+async function rowLeftMost() {
+    const res = await fetch('http://localhost:3000/row-leftmost?sheet_id=1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc&row=1&sheet_name=Sheet1', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function columnTopMost() {
+    const res = await fetch('http://localhost:3000/column-topmost?sheet_id=1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc&column=A&sheet_name=Sheet1', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function addToEndOfRow() {
+    const res = await fetch('http://localhost:3000/add-to-end-of-row?sheet_id=1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc&row=1&text=hello&sheet_name=Sheet1', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function addToEndOfColumn() {
+    const res = await fetch('http://localhost:3000/add-to-end-of-column?sheet_id=1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc&column=A&text=hello&sheet_name=Sheet1', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
     return data;
 }
