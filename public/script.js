@@ -390,3 +390,43 @@ function addSingleTaskItem() {
     globalOneTimeTasksArr.push(newTask)
     renderOneTimeTasksList(globalOneTimeTasksArr)
 }
+
+async function dummyAsyncFunction(input = "hello") {
+    // Simulate async work (network, timer, I/O, etc.)
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    const result = {
+        ok: true,
+        received: input,
+        timestamp: new Date().toISOString(),
+    };
+
+    console.log("dummyAsyncFunction result:", result);
+    return result;
+}
+
+async function asyncMutateSheetWrapper() {
+    await mutateSheet(
+        '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        'Sheet1!A1',
+        'hello10'
+    );
+}
+
+async function mutateSheet(sheetId, cellNumber, text) {
+    const res = await fetch('http://localhost:3000/mutate-sheet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sheet_id: sheetId,
+            cell_number: cellNumber,
+            text,
+        }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    return data;
+}
