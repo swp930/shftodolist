@@ -408,7 +408,7 @@ async function dummyAsyncFunction(input = "hello") {
 async function asyncMutateSheetWrapper() {
     await mutateSheet(
         '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
-        'Sheet1!A1',
+        'Sheet1!C20',
         'hello10'
     );
 }
@@ -501,4 +501,86 @@ async function addToEndOfColumn() {
     }
     console.log(data)
     return data;
+}
+
+async function addToDoListTask() {
+    await addToEndOfColumn(getTodoListTask())
+}
+
+function getTodoListTask() {
+    return "dummy"
+}
+
+async function addToEndOfColumn(text) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: 'A',
+        text,
+        sheet_name: 'Sheet1',
+    });
+
+    const res = await fetch(
+        `http://localhost:3000/add-to-end-of-column?${params.toString()}`,
+        { method: 'GET' }
+    );
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function getTodoListItems() {
+    await rowLeftMost(1)
+}
+
+async function rowLeftMost(row_num) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        row: row_num,
+        sheet_name: 'Sheet1',
+    });
+
+    const res = await fetch(`http://localhost:3000/row-leftmost?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function getAtomicItemsForTodoListTask() {
+    console.log("getAtomicItemsForTodoListTask")
+    await columnTopMost("A")
+}
+
+async function columnTopMost(col_letter) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: col_letter,
+        sheet_name: 'Sheet1',
+    });
+
+    const res = await fetch(`http://localhost:3000/column-topmost?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function markTodoListAsCompleted() {
+    console.log("markTodoListAsCompleted")
 }

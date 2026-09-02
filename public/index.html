@@ -13,140 +13,28 @@
     </header>
 
     <main>
-      <h1>Todo Investing Schedule System</h1>
-      <button onclick="logToConsole()">Log to console</button>
-
-      <div
-        style="
-          border: 1px solid red;
-          width: 100%;
-          height: 1600px;
-          display: flex;
-          flex-direction: row;
-        "
-      >
-        <div style="width: 50%; border: 1px solid green; flex: 1">
-          <div
-            style="
-              width: 100%;
-              height: 15%;
-              border: 1px solid blue;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-            "
-          >
-            One Time Tasks
-            <input type="file" id="fileInputOneTime" />
-            <br />
-            <button onclick="asyncMutateSheetWrapper()">
-              Mutate spreadsheet
-            </button>
-            <button onclick="asyncGetDataForRow()">asyncGetDataForRow</button>
-            <button onclick="asyncGetDataForColumn()">
-              asyncGetDataForColumn
-            </button>
-            <button onclick="asyncAddToEndOfRow()">asyncAddToEndOfRow</button>
-            <button onclick="asyncAddToEndOfColumn()">
-              asyncAddToEndOfColumn
-            </button>
-          </div>
-          <div style="width: 100%; height: 85%; border: 1px solid blue">
-            <ul id="unordered_list_one_time"></ul>
-            <br />
-            <input type="text" id="addToOneTimeTasks" />
-            <button onclick="addSingleTaskItem()">
-              Add new single task item
-            </button>
-            <br />
-            <button onclick="exportOneTimeData()">Export data</button>
-          </div>
-        </div>
-        <div style="width: 50%; border: 1px solid green; flex: 1">
-          <div
-            style="
-              width: 100%;
-              height: 15%;
-              border: 1px solid blue;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              overflow: scroll;
-            "
-          >
-            Repeatable Tasks
-            <br />
-            <!--
-            <p>Select your file:</p>
-            <input type="file" id="fileInputRepeatable" />
-            -->
-
-            <p>Select your file:</p>
-            <input type="file" id="fileInputRepeatableExperimental" />
-
-            <p>Start time</p>
-            <input type="datetime-local" id="datetimeInputStart" />
-            <br />
-            <p>End time</p>
-            <input type="datetime-local" id="datetimeInputEnd" />
-            <br />
-          </div>
-          <div style="width: 100%; height: 85%; border: 1px solid blue">
-            <br />
-            <ul id="unordered_list"></ul>
-            <br />
-            <button onclick="addItemToTodoList()">Add item to todo list</button>
-            <br />
-            <input type="text" placeholder="Enter text here" id="textInput" />
-            <button onclick="exportDataRepeatables()">Export data</button>
-          </div>
-        </div>
-      </div>
-
+      <h1>ShadowFox</h1>
+      <button onclick="asyncMutateSheetWrapper()">Mutate spreadsheet</button>
       <br />
-      <div
-        style="
-          border: 1px solid green;
-          width: 100%;
-          height: 1600px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        "
-      >
-        <div
-          style="
-            width: 100%;
-            height: 30%;
-            border: 1px solid black;
-            text-align: center;
-          "
-        >
-          <p id="focus-title">Focus title goes here</p>
-          <p id="atomic-task-id">Task id goes here</p>
-          <p id="focus-type">Type goes here</p>
-        </div>
-        <div
-          style="width: 100%; height: 70%; text-align: center; overflow: scroll"
-        >
-          <input
-            type="text"
-            id="atomic-task-input"
-            placeholder="Add atomic task here"
-          />
-          <button onclick="addToFocusTaskList()">Submit</button>
-          <br />
-          <ul id="focus-atomic-tasks"></ul>
-          <button onclick="saveAtomicTasks()">Save atomic tasks</button>
-          <br />
-          <button onclick="markTaskAsCompleted()">
-            Mark task as completed
-          </button>
-        </div>
-      </div>
+      <button onclick="asyncGetDataForRow()">asyncGetDataForRow</button>
+      <br />
+      <button onclick="asyncGetDataForColumn()">asyncGetDataForColumn</button>
+      <br />
+      <button onclick="asyncAddToEndOfRow()">asyncAddToEndOfRow</button>
+      <br />
+      <button onclick="asyncAddToEndOfColumn()">asyncAddToEndOfColumn</button>
+      <br />
+      <button onclick="addToDoListTask()">Add todo list item</button>
+      <br />
+      <button onclick="getTodoListItems()">Get todo list items</button>
+      <br />
+      <button onclick="getAtomicItemsForTodoListTask()">
+        Get atomic items for todo list task
+      </button>
+      <br />
+      <button onclick="markTodoListAsCompleted()">
+        Mark todo list as completed
+      </button>
     </main>
 
     <footer>
