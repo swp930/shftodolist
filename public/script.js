@@ -532,6 +532,27 @@ async function addToEndOfColumn(text) {
     return data;
 }
 
+async function addToEndOfColumnSheet2(text, column_idx) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: column_idx,
+        text,
+        sheet_name: 'Sheet2',
+    });
+
+    const res = await fetch(
+        `http://localhost:3000/add-to-end-of-column?${params.toString()}`,
+        { method: 'GET' }
+    );
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
 async function getTodoListItems() {
     await rowLeftMost(1)
 }
@@ -582,5 +603,56 @@ async function columnTopMost(col_letter) {
 }
 
 async function markTodoListAsCompleted() {
-    console.log("markTodoListAsCompleted")
+    const data = await columnTopMost("A")
+    const completedTasks = await rowLeftMostSheet2(1)
+    const completedTasksData = completedTasks.data
+    let colName = "A"
+    if (completedTasksData.length > 0) {
+        colName = completedTasksData[completedTasksData.length - 1][0][0]
+    }
+    const nextCol = nextColumn(colName)
+
+    const dummyTodoListRes = await columnTopMost("A")
+    const dummyTodoListResData = dummyTodoListRes.data
+
+    for (let i = 0; i < dummyTodoListResData.length; i++) {
+        await addToEndOfColumnSheet2(dummyTodoListResData[i][1], nextCol)
+    }
+}
+
+function nextColumn(col) {
+    col = String(col).trim().toUpperCase();
+    let n = 0;
+    for (const ch of col) {
+        n = n * 26 + (ch.charCodeAt(0) - 64);
+    }
+    n += 1;
+
+    let s = "";
+    while (n > 0) {
+        n--;
+        s = String.fromCharCode(65 + (n % 26)) + s;
+        n = Math.floor(n / 26);
+    }
+    return s;
+}
+
+async function rowLeftMostSheet2(row_num) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        row: row_num,
+        sheet_name: 'Sheet2',
+    });
+
+    const res = await fetch(`http://localhost:3000/row-leftmost?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
 }
