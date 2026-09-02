@@ -554,7 +554,7 @@ async function addToEndOfColumnSheet2(text, column_idx) {
 }
 
 async function getTodoListItems() {
-    await rowLeftMost(1)
+    return await rowLeftMost(1)
 }
 
 async function rowLeftMost(row_num) {
@@ -615,6 +615,9 @@ async function markTodoListAsCompleted() {
     const dummyTodoListRes = await columnTopMost("A")
     const dummyTodoListResData = dummyTodoListRes.data
 
+    // Delete A column from sheet 1
+    await deleteColumnSheet1("A")
+
     for (let i = 0; i < dummyTodoListResData.length; i++) {
         await addToEndOfColumnSheet2(dummyTodoListResData[i][1], nextCol)
     }
@@ -655,4 +658,72 @@ async function rowLeftMostSheet2(row_num) {
     }
     console.log(data)
     return data;
+}
+
+async function deleteColumnSheet1(col_num) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: col_num,
+        sheet_name: 'Sheet1',
+    });
+
+    const res = await fetch(`http://localhost:3000/delete-column?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
+async function addTasksToRightmostColumn({
+    sheetId = '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+    sheetName = 'Sheet2',
+    tasks = ["test", "test2", "test3"],
+} = {}) {
+    const res = await fetch('http://localhost:3000/add-to-column-rightmost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            sheet_id: sheetId,
+            sheet_name: sheetName,
+            tasks,
+        }),
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.ok === false) {
+        throw new Error(data.error || `Request failed (${res.status})`);
+    }
+    return data;
+}
+
+async function loadRefreshTodoListItems() {
+    console.log("loadRefreshTodoListItems")
+    const resGetTodoListItems = await getTodoListItems()
+    console.log("resGetTodoListItems")
+    console.log(resGetTodoListItems)
+
+    //const dummyTasksArray = ["button1", "button2", "button3"]
+    populateTodoListItemsSelect(resGetTodoListItems.data)
+}
+
+function populateTodoListItemsSelect(tasks) {
+    // select id: todo_list_items
+    const selectElem = document.getElementById("todo_list_items")
+    for (let i = 0; i < tasks.length; i++) {
+        const optionElem = document.createElement("option")
+        optionElem.value = tasks[i][1]
+        optionElem.innerText = tasks[i][1]
+        selectElem.appendChild(optionElem)
+    }
+}
+
+async function logCurrentSelectValue() {
+    const selectElem = document.getElementById("todo_list_items")
+    console.log(selectElem.value)
 }
