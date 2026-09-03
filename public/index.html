@@ -41,13 +41,24 @@
       </button>
       <br />
       <button onclick="loadRefreshTodoListItems()">
-        Load Refresh Todo List Items
+        1. Load / Refresh Todo List Items
       </button>
       <br />
       <select name="todo_list_items" id="todo_list_items"></select>
       <br />
       <button onclick="logCurrentSelectValue()">
         Log current select value
+      </button>
+      <br />
+      <button onclick="loadAtomicTasksForCurrentTask()">
+        2. Load atomic tasks for current task
+      </button>
+      <ul id="atomic_tasks"></ul>
+      <br />
+      <input type="text" placeholder="Add atomic task" id="add_atomic_task" />
+      <br />
+      <button onclick="onClickHandlerAddAtomicTasks()">
+        3. Add atomic task to current task
       </button>
     </main>
 

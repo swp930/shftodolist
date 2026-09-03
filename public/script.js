@@ -36,6 +36,10 @@ const atomicTaskHtmlConst = "Task id goes here"
 
 const focusTypeHtmlConst = "Type goes here"
 
+let taskNameToSheetsId = {}
+
+let loadedAtomicTasks = false
+
 // Dummy log to console function
 function logToConsole() {
     console.log("Hello world")
@@ -598,7 +602,6 @@ async function columnTopMost(col_letter) {
     if (!res.ok || !data.ok) {
         throw new Error(data.error || `Request failed: ${res.status}`);
     }
-    console.log(data)
     return data;
 }
 
@@ -710,20 +713,55 @@ async function loadRefreshTodoListItems() {
 
     //const dummyTasksArray = ["button1", "button2", "button3"]
     populateTodoListItemsSelect(resGetTodoListItems.data)
+    loadRefreshTodoListItems = false
 }
 
 function populateTodoListItemsSelect(tasks) {
     // select id: todo_list_items
+    taskNameToSheetsId = {}
     const selectElem = document.getElementById("todo_list_items")
+    selectElem.innerHTML = ""
     for (let i = 0; i < tasks.length; i++) {
         const optionElem = document.createElement("option")
         optionElem.value = tasks[i][1]
         optionElem.innerText = tasks[i][1]
         selectElem.appendChild(optionElem)
+        taskNameToSheetsId[tasks[i][1]] = tasks[i][0]
     }
 }
 
 async function logCurrentSelectValue() {
     const selectElem = document.getElementById("todo_list_items")
     console.log(selectElem.value)
+}
+
+async function loadAtomicTasksForCurrentTask() {
+    const selectElem = document.getElementById("todo_list_items")
+    const taskName = selectElem.value
+    console.log("task: ", taskName)
+    console.log("sheetsID: ", taskNameToSheetsId[taskName])
+    console.log("column name", taskNameToSheetsId[taskName][0])
+    const columnData = await columnTopMost(taskNameToSheetsId[taskName][0])
+    console.log("atomic tasks raw data", columnData)
+
+    const unorderedListAtomicTasks = document.getElementById("atomic_tasks")
+    unorderedListAtomicTasks.innerHTML = ""
+
+    const dataElems = columnData.data
+    console.log("dataElems: ", dataElems)
+
+    for (let i = 1; i < dataElems.length; i++) {
+        console.log(dataElems[i])
+        const liElem = document.createElement("li")
+        liElem.innerHTML = dataElems[i][1]
+        unorderedListAtomicTasks.appendChild(liElem)
+    }
+    loadedAtomicTasks = true
+}
+
+function onClickHandlerAddAtomicTasks() {
+    console.log("onClickHandlerAddAtomicTasks")
+    if (!loadedAtomicTasks) {
+        alert("Please load atomic tasks for a task first")
+    }
 }
