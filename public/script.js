@@ -754,7 +754,7 @@ async function deleteColumnSheet1(col_num) {
     return data;
 }
 
-// addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: ['task1'] })
+// addTasksToRightmostColumn({ sheetName: 'Sheet2', tasks: ['task1'] })
 async function addTasksToRightmostColumn({
     sheetId = '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
     sheetName = 'Sheet2',
@@ -894,7 +894,7 @@ function parseA1(cellname) {
     if (!match) return { column: 0, row: 0, columnLetters: "", rowText: "" };
     return {
         columnLetters: match[1].toUpperCase(),
-        column: letterToColumnNumber(match[1]),
+        column: match[1],
         rowText: match[2],
         row: Number(match[2]),
     };
@@ -902,12 +902,12 @@ function parseA1(cellname) {
 
 function stripColumnFromCellName(cellname) {
     // "A1" -> 1, "Sheet1!AB12" -> 12
-    return parseA1(cellname).row;
+    return parseA1(cellname).column;
 }
 
 function stripRowFromCellname(cellname) {
     // "A1" -> 1, "Sheet1!AB12" -> 28
-    return parseA1(cellname).column;
+    return parseA1(cellname).row;
 }
 
 async function onClickHandlerAddAtomicTasks() {
@@ -937,6 +937,65 @@ async function onClickHandlerAddAtomicTasks() {
 
 async function onClickHandlerAddNewTodoItem() {
     console.log("onClickHandlerAddNewTodoItem")
-    await addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: ['newtask'] })
+    const oneTimeTodoItemAddTextElem = document.getElementById("one_time_todo_item_add_text")
+    const newTodoText = oneTimeTodoItemAddTextElem.value
+    // one_time_todo_item_add_text
+    if (!validTodoItemText(newTodoText)) {
+        alert("Incorrect todo list text, make sure nonempty and doesn't have pipe delimitter (\"|\")")
+    } else {
+        await addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: [newTodoText] })
+        await loadRefreshTodoListItems()
+    }
+}
+
+function validTodoItemText(todo_item_text) {
+    return String(todo_item_text).length > 0 && !String(todo_item_text).includes("|");
+}
+
+function getColumnFromTaskKey(taskKey) {
+    const cellName = taskKey.split("|")[1]
+    const column = stripColumnFromCellName(cellName)
+    return column
+}
+
+async function onClickMarkTaskAsCompleted() {
+    showToast("Saving data", "info", "Saving data");
+    console.log("onClickMarkTaskAsCompleted")
+    const column = getColumnFromTaskKey(getCurrentSelectedTaskKey())
+    console.log("column", column)
+
+    // Grab column data of that which we want to delete
+    const currColumnData = await columnTopMost(column)
+    console.log(currColumnData)
+    const rawData = currColumnData.data
+    console.log(rawData)
+    const mappedData = rawData.map(elem => {
+        return elem[1]
+    })
+    console.log("mappedData: ", mappedData)
+
+    // Delete column 
+    await deleteColumnSheet1(column)
+
+    await addTasksToRightmostColumn({
+        sheetName: "Sheet2",
+        tasks: mappedData
+    })
+    await resetUI()
+    showToast("Data saved.", "success", "Saved");
+
+}
+
+async function resetUI() {
+    taskNameToSheetsId = {}
+    const elemsToReset = ["one_time_todo_item_add_text", "todo_list_items", "atomic_tasks"]
+    for (const elemID of elemsToReset) {
+        resetElem(elemID)
+    }
     await loadRefreshTodoListItems()
-}  
+}
+
+function resetElem(elemID) {
+    const elem = document.getElementById(elemID)
+    elem.innerHTML = ""
+}
