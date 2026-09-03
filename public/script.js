@@ -653,7 +653,6 @@ async function rowLeftMost(row_num) {
 }
 
 async function getAtomicItemsForTodoListTask() {
-    console.log("getAtomicItemsForTodoListTask")
     await columnTopMost("A")
 }
 
@@ -778,23 +777,15 @@ async function addTasksToRightmostColumn({
 }
 
 async function loadRefreshTodoListItems() {
-    console.log("loadRefreshTodoListItems")
     const resGetTodoListItems = await getTodoListItems()
-    console.log("resGetTodoListItems")
-    console.log(resGetTodoListItems)
 
-    //const dummyTasksArray = ["button1", "button2", "button3"]
     populateTodoListItemsSelectDummy(resGetTodoListItems.data)
     loadedAtomicTasks = false
 }
 
 async function loadRefreshTodoListItemsDummy() {
-    console.log("loadRefreshTodoListItemsDummy")
     const resGetTodoListItems = await getTodoListItems()
-    console.log("resGetTodoListItems")
-    console.log(resGetTodoListItems)
 
-    console.log("resGetTodoListItems.data", resGetTodoListItems.data)
     populateTodoListItemsSelectDummy(resGetTodoListItems.data)
     loadedAtomicTasks = false
 }
@@ -837,31 +828,22 @@ function populateTodoListItemsSelect(tasks) {
 
 async function logCurrentSelectValue() {
     const selectElem = document.getElementById("todo_list_items")
-    console.log(selectElem)
-    console.log(selectElem.value)
     const option2 = selectElem.options[selectElem.selectedIndex];
     console.log(option2)
     console.log(option2.name)
 }
 
 async function loadAtomicTasksForCurrentTask() {
-    const selectElem = document.getElementById("todo_list_items")
     const taskKey = getCurrentSelectedTaskKey()
-    console.log("taskKey: ", taskKey)
-    console.log("taskNameToSheetsId[taskKey]: ", taskNameToSheetsId[taskKey])
     const col = taskKey.split("|")[1][0]
-    console.log("col", col)
     const columnData = await columnTopMost(col)
-    console.log("atomic tasks raw data", columnData)
 
     const unorderedListAtomicTasks = document.getElementById("atomic_tasks")
     unorderedListAtomicTasks.innerHTML = ""
 
     const dataElems = columnData.data
-    console.log("dataElems: ", dataElems)
 
     for (let i = 1; i < dataElems.length; i++) {
-        console.log(dataElems[i])
         const liElem = document.createElement("li")
         liElem.innerHTML = dataElems[i][1]
         unorderedListAtomicTasks.appendChild(liElem)
@@ -911,22 +893,17 @@ function stripRowFromCellname(cellname) {
 }
 
 async function onClickHandlerAddAtomicTasks() {
-    console.log("onClickHandlerAddAtomicTasks")
     if (!loadedAtomicTasks) {
         alert("Please load atomic tasks for a task first")
     } else {
         const textInputElem = document.getElementById("add_atomic_task")
         const textFromInputElem = textInputElem.value
-        console.log(textFromInputElem)
 
         const selectElem = document.getElementById("todo_list_items")
         console.log(selectElem.value)
 
         const currentSelectedKey = getCurrentSelectedTaskKey()
-        console.log("currentSelectedKey: ", currentSelectedKey)
-        console.log("taskNameToSheetsId[currentSelectedKey]", taskNameToSheetsId[currentSelectedKey])
         const col = stripColumnFromCellName(currentSelectedKey.split("|")[1])
-        console.log("col: ", col)
 
         await addToEndOfColumnSheet1(textFromInputElem, col)
         showToast("Reloading atomic tasks", "info", "Loading");
@@ -936,7 +913,6 @@ async function onClickHandlerAddAtomicTasks() {
 }
 
 async function onClickHandlerAddNewTodoItem() {
-    console.log("onClickHandlerAddNewTodoItem")
     const oneTimeTodoItemAddTextElem = document.getElementById("one_time_todo_item_add_text")
     const newTodoText = oneTimeTodoItemAddTextElem.value
     // one_time_todo_item_add_text
@@ -960,19 +936,14 @@ function getColumnFromTaskKey(taskKey) {
 
 async function onClickMarkTaskAsCompleted() {
     showToast("Saving data", "info", "Saving data");
-    console.log("onClickMarkTaskAsCompleted")
     const column = getColumnFromTaskKey(getCurrentSelectedTaskKey())
-    console.log("column", column)
 
     // Grab column data of that which we want to delete
     const currColumnData = await columnTopMost(column)
-    console.log(currColumnData)
     const rawData = currColumnData.data
-    console.log(rawData)
     const mappedData = rawData.map(elem => {
         return elem[1]
     })
-    console.log("mappedData: ", mappedData)
 
     // Delete column 
     await deleteColumnSheet1(column)
