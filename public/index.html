@@ -44,6 +44,12 @@
         1. Load / Refresh Todo List Items
       </button>
       <br />
+      <input type="text" id="one_time_todo_item_add_text" />
+      <br />
+      <button onclick="onClickHandlerAddNewTodoItem()">
+        Add One Time Todo Item
+      </button>
+      <br />
       <select name="todo_list_items" id="todo_list_items"></select>
       <br />
       <button onclick="logCurrentSelectValue()">
@@ -60,6 +66,7 @@
       <button onclick="onClickHandlerAddAtomicTasks()">
         3. Add atomic task to current task
       </button>
+      <div id="toast-container" aria-live="polite"></div>
     </main>
 
     <footer>

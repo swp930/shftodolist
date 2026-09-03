@@ -1,0 +1,110 @@
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    width: min(380px, calc(100vw - 32px));
+    pointer-events: none;
+  }
+  
+  .app-toast {
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px 16px;
+    border-radius: 12px;
+    background: #1a2332;
+    color: #e8eef5;
+    font-family: inherit;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+    animation: app-toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  .app-toast.leaving {
+    animation: app-toast-out 0.28s ease forwards;
+  }
+  
+  .app-toast-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+  }
+  
+  .app-toast-body { flex: 1; min-width: 0; }
+  
+  .app-toast-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin-bottom: 2px;
+  }
+  
+  .app-toast-msg {
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: #c5d0de;
+  }
+  
+  .app-toast-close {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #8b9bb4;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+    margin-top: -2px;
+  }
+  .app-toast-close:hover { color: #fff; }
+  
+  .app-toast-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    animation: app-toast-bar-shrink linear forwards;
+  }
+  
+  .app-toast.success { border-left: 3px solid #22c55e; }
+  .app-toast.error   { border-left: 3px solid #ef4444; }
+  .app-toast.warning { border-left: 3px solid #f59e0b; }
+  .app-toast.info    { border-left: 3px solid #3b82f6; }
+  
+  .app-toast.success .app-toast-bar { background: #22c55e; }
+  .app-toast.error   .app-toast-bar { background: #ef4444; }
+  .app-toast.warning .app-toast-bar { background: #f59e0b; }
+  .app-toast.info    .app-toast-bar { background: #3b82f6; }
+  
+  @keyframes app-toast-in {
+    from { opacity: 0; transform: translateX(28px) scale(0.98); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes app-toast-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(28px); }
+  }
+  @keyframes app-toast-bar-shrink {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+  }
+  
+  @media (max-width: 480px) {
+    #toast-container {
+      right: 16px;
+      left: 16px;
+      bottom: 16px;
+      width: auto;
+    }
+  }

@@ -1,3 +1,53 @@
+function showToast(message, type, title, duration) {
+    type = type || "info";
+    duration = duration == null ? 4000 : duration;
+
+    var ICONS = {
+        success: '<svg class="app-toast-icon" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>',
+        error: '<svg class="app-toast-icon" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+        warning: '<svg class="app-toast-icon" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></svg>',
+        info: '<svg class="app-toast-icon" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 8h.01"/></svg>'
+    };
+
+    var container = document.getElementById("toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toast-container";
+        container.setAttribute("aria-live", "polite");
+        document.body.appendChild(container);
+    }
+
+    var toast = document.createElement("div");
+    toast.className = "app-toast " + type;
+    toast.setAttribute("role", "status");
+
+    var heading = title || type.charAt(0).toUpperCase() + type.slice(1);
+
+    toast.innerHTML =
+        (ICONS[type] || ICONS.info) +
+        '<div class="app-toast-body">' +
+        '<div class="app-toast-title"></div>' +
+        '<div class="app-toast-msg"></div>' +
+        "</div>" +
+        '<button type="button" class="app-toast-close" aria-label="Dismiss">&times;</button>' +
+        '<div class="app-toast-bar" style="animation-duration:' + duration + 'ms"></div>';
+
+    toast.querySelector(".app-toast-title").textContent = heading;
+    toast.querySelector(".app-toast-msg").textContent = message;
+
+    function remove() {
+        if (toast.classList.contains("leaving")) return;
+        toast.classList.add("leaving");
+        toast.addEventListener("animationend", function () { toast.remove(); }, { once: true });
+    }
+
+    toast.querySelector(".app-toast-close").addEventListener("click", remove);
+    container.appendChild(toast);
+
+    var timer = setTimeout(remove, duration);
+    toast.addEventListener("mouseenter", function () { clearTimeout(timer); }, { once: true });
+}
+
 // Task class
 class Task {
     constructor(name, id) {
@@ -536,6 +586,27 @@ async function addToEndOfColumn(text) {
     return data;
 }
 
+async function addToEndOfColumnSheet1(text, column_idx) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: column_idx,
+        text,
+        sheet_name: 'Sheet1',
+    });
+
+    const res = await fetch(
+        `http://localhost:3000/add-to-end-of-column?${params.toString()}`,
+        { method: 'GET' }
+    );
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
 async function addToEndOfColumnSheet2(text, column_idx) {
     const params = new URLSearchParams({
         sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
@@ -683,6 +754,7 @@ async function deleteColumnSheet1(col_num) {
     return data;
 }
 
+// addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: ['task1'] })
 async function addTasksToRightmostColumn({
     sheetId = '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
     sheetName = 'Sheet2',
@@ -712,8 +784,37 @@ async function loadRefreshTodoListItems() {
     console.log(resGetTodoListItems)
 
     //const dummyTasksArray = ["button1", "button2", "button3"]
-    populateTodoListItemsSelect(resGetTodoListItems.data)
-    loadRefreshTodoListItems = false
+    populateTodoListItemsSelectDummy(resGetTodoListItems.data)
+    loadedAtomicTasks = false
+}
+
+async function loadRefreshTodoListItemsDummy() {
+    console.log("loadRefreshTodoListItemsDummy")
+    const resGetTodoListItems = await getTodoListItems()
+    console.log("resGetTodoListItems")
+    console.log(resGetTodoListItems)
+
+    console.log("resGetTodoListItems.data", resGetTodoListItems.data)
+    populateTodoListItemsSelectDummy(resGetTodoListItems.data)
+    loadedAtomicTasks = false
+}
+
+function populateTodoListItemsSelectDummy(tasks) {
+    // select id: todo_list_items
+    taskNameToSheetsId = {}
+    const selectElem = document.getElementById("todo_list_items")
+    selectElem.innerHTML = ""
+    for (let i = 0; i < tasks.length; i++) {
+        const optionElem = document.createElement("option")
+        optionElem.name = "Sheet1" + "|" + tasks[i][0]
+        optionElem.value = tasks[i][1]
+        optionElem.innerText = tasks[i][1]
+        selectElem.appendChild(optionElem)
+
+        const key = "Sheet1" + "|" + tasks[i][0] + "|" + tasks[i][1]
+        const val = "Sheet1" + "|" + tasks[i][0]
+        taskNameToSheetsId[key] = val
+    }
 }
 
 function populateTodoListItemsSelect(tasks) {
@@ -723,25 +824,34 @@ function populateTodoListItemsSelect(tasks) {
     selectElem.innerHTML = ""
     for (let i = 0; i < tasks.length; i++) {
         const optionElem = document.createElement("option")
+        optionElem.name = "Sheet1" + "|" + tasks[i][0]
         optionElem.value = tasks[i][1]
         optionElem.innerText = tasks[i][1]
         selectElem.appendChild(optionElem)
-        taskNameToSheetsId[tasks[i][1]] = tasks[i][0]
+
+        const key = "Sheet1" + "|" + tasks[i][0] + "|" + tasks[i][1]
+        const val = "Sheet1" + "|" + tasks[i][0]
+        taskNameToSheetsId[key] = val
     }
 }
 
 async function logCurrentSelectValue() {
     const selectElem = document.getElementById("todo_list_items")
+    console.log(selectElem)
     console.log(selectElem.value)
+    const option2 = selectElem.options[selectElem.selectedIndex];
+    console.log(option2)
+    console.log(option2.name)
 }
 
 async function loadAtomicTasksForCurrentTask() {
     const selectElem = document.getElementById("todo_list_items")
-    const taskName = selectElem.value
-    console.log("task: ", taskName)
-    console.log("sheetsID: ", taskNameToSheetsId[taskName])
-    console.log("column name", taskNameToSheetsId[taskName][0])
-    const columnData = await columnTopMost(taskNameToSheetsId[taskName][0])
+    const taskKey = getCurrentSelectedTaskKey()
+    console.log("taskKey: ", taskKey)
+    console.log("taskNameToSheetsId[taskKey]: ", taskNameToSheetsId[taskKey])
+    const col = taskKey.split("|")[1][0]
+    console.log("col", col)
+    const columnData = await columnTopMost(col)
     console.log("atomic tasks raw data", columnData)
 
     const unorderedListAtomicTasks = document.getElementById("atomic_tasks")
@@ -759,9 +869,74 @@ async function loadAtomicTasksForCurrentTask() {
     loadedAtomicTasks = true
 }
 
-function onClickHandlerAddAtomicTasks() {
+function getCurrentSelectedTaskKey() {
+    const selectElem = document.getElementById("todo_list_items")
+    const option2 = selectElem.options[selectElem.selectedIndex];
+
+    return option2.name + "|" + option2.value
+}
+
+function letterToColumnNumber(letters) {
+    let n = 0;
+    const s = String(letters).toUpperCase();
+    for (let i = 0; i < s.length; i++) {
+        const code = s.charCodeAt(i);
+        if (code < 65 || code > 90) continue;
+        n = n * 26 + (code - 64);
+    }
+    return n;
+}
+
+function parseA1(cellname) {
+    const raw = String(cellname).trim();
+    const a1 = raw.includes("!") ? raw.slice(raw.lastIndexOf("!") + 1) : raw;
+    const match = a1.match(/\$?([A-Za-z]+)\$?(\d+)/);
+    if (!match) return { column: 0, row: 0, columnLetters: "", rowText: "" };
+    return {
+        columnLetters: match[1].toUpperCase(),
+        column: letterToColumnNumber(match[1]),
+        rowText: match[2],
+        row: Number(match[2]),
+    };
+}
+
+function stripColumnFromCellName(cellname) {
+    // "A1" -> 1, "Sheet1!AB12" -> 12
+    return parseA1(cellname).row;
+}
+
+function stripRowFromCellname(cellname) {
+    // "A1" -> 1, "Sheet1!AB12" -> 28
+    return parseA1(cellname).column;
+}
+
+async function onClickHandlerAddAtomicTasks() {
     console.log("onClickHandlerAddAtomicTasks")
     if (!loadedAtomicTasks) {
         alert("Please load atomic tasks for a task first")
+    } else {
+        const textInputElem = document.getElementById("add_atomic_task")
+        const textFromInputElem = textInputElem.value
+        console.log(textFromInputElem)
+
+        const selectElem = document.getElementById("todo_list_items")
+        console.log(selectElem.value)
+
+        const currentSelectedKey = getCurrentSelectedTaskKey()
+        console.log("currentSelectedKey: ", currentSelectedKey)
+        console.log("taskNameToSheetsId[currentSelectedKey]", taskNameToSheetsId[currentSelectedKey])
+        const col = stripColumnFromCellName(currentSelectedKey.split("|")[1])
+        console.log("col: ", col)
+
+        await addToEndOfColumnSheet1(textFromInputElem, col)
+        showToast("Reloading atomic tasks", "info", "Loading");
+        await loadAtomicTasksForCurrentTask()
+        showToast("Atomic tasks loaded.", "success", "Loaded");
     }
 }
+
+async function onClickHandlerAddNewTodoItem() {
+    console.log("onClickHandlerAddNewTodoItem")
+    await addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: ['newtask'] })
+    await loadRefreshTodoListItems()
+}  
