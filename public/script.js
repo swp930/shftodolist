@@ -675,6 +675,44 @@ async function columnTopMost(col_letter) {
     return data;
 }
 
+async function columnTopMostSheet2(col_letter) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: col_letter,
+        sheet_name: 'Sheet2',
+    });
+
+    const res = await fetch(`http://localhost:3000/column-topmost?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    return data;
+}
+
+async function columnTopMostSheet2(col_letter) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: col_letter,
+        sheet_name: 'Sheet2',
+    });
+
+    const res = await fetch(`http://localhost:3000/column-topmost?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    return data;
+}
+
 async function markTodoListAsCompleted() {
     const data = await columnTopMost("A")
     const completedTasks = await rowLeftMostSheet2(1)
@@ -753,6 +791,26 @@ async function deleteColumnSheet1(col_num) {
     return data;
 }
 
+async function deleteColumnSheet2(col_num) {
+    const params = new URLSearchParams({
+        sheet_id: '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+        column: col_num,
+        sheet_name: 'Sheet2',
+    });
+
+    const res = await fetch(`http://localhost:3000/delete-column?${params.toString()}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+    console.log(data)
+    return data;
+}
+
 // addTasksToRightmostColumn({ sheetName: 'Sheet2', tasks: ['task1'] })
 async function addTasksToRightmostColumn({
     sheetId = '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
@@ -770,6 +828,7 @@ async function addTasksToRightmostColumn({
     });
 
     const data = await res.json();
+    console.log(data)
     if (!res.ok || data.ok === false) {
         throw new Error(data.error || `Request failed (${res.status})`);
     }
@@ -919,6 +978,8 @@ async function onClickHandlerAddNewTodoItem() {
     if (!validTodoItemText(newTodoText)) {
         alert("Incorrect todo list text, make sure nonempty and doesn't have pipe delimitter (\"|\")")
     } else {
+        resetUI()
+        console.log("newTodoText", newTodoText)
         await addTasksToRightmostColumn({ sheetName: 'Sheet1', tasks: [newTodoText] })
         await loadRefreshTodoListItems()
     }
@@ -952,21 +1013,161 @@ async function onClickMarkTaskAsCompleted() {
         sheetName: "Sheet2",
         tasks: mappedData
     })
-    await resetUI()
+    resetUI()
+    await loadRefreshTodoListItems()
     showToast("Data saved.", "success", "Saved");
 
 }
 
-async function resetUI() {
+function resetUI() {
     taskNameToSheetsId = {}
-    const elemsToReset = ["one_time_todo_item_add_text", "todo_list_items", "atomic_tasks"]
+    const elemsToReset = ["one_time_todo_item_add_text", "atomic_tasks", "add_atomic_task"]
     for (const elemID of elemsToReset) {
         resetElem(elemID)
     }
-    await loadRefreshTodoListItems()
 }
 
 function resetElem(elemID) {
     const elem = document.getElementById(elemID)
     elem.innerHTML = ""
+    elem.value = ""
+}
+
+async function getRightmostColumnSheet2() {
+    const url =
+        "http://localhost:3000/rightmost-column?" +
+        new URLSearchParams({
+            sheet_id: "1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc",
+            sheet_name: "Sheet2",
+        });
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok || data.ok === false) {
+        throw new Error(data.error || `Request failed: ${res.status}`);
+    }
+
+    return data;
+}
+
+async function onClickSanityCheck1() {
+    console.log("onClickSanityCheck1")
+    const newTaskId = "test" + generateId()
+    console.log(newTaskId)
+    const elem = document.getElementById("one_time_todo_item_add_text")
+    elem.value = newTaskId
+    await onClickHandlerAddNewTodoItem()
+
+    const select = document.getElementById("todo_list_items")
+    let idx = 0
+    for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value == newTaskId) {
+            idx = i
+            select.selectedIndex = idx
+            break
+        }
+    }
+    await loadAtomicTasksForCurrentTask()
+
+    const textElem = document.getElementById("add_atomic_task")
+    const newAtomicTaskId = "newatomictask" + generateId()
+    textElem.value = newAtomicTaskId
+
+    await onClickHandlerAddAtomicTasks()
+    resetUI()
+
+    select.selectedIndex = idx
+    await onClickMarkTaskAsCompleted()
+
+    const rightMostColumn = await getRightmostColumnSheet2()
+    console.log("rightMostColumn", rightMostColumn.column)
+    const col = rightMostColumn.column
+    console.log("col: ", col)
+
+    const completedTaskData = await columnTopMostSheet2(col)
+    console.log("completedTaskData: ", completedTaskData)
+
+    const rawCompletedData = completedTaskData.data.map(elem => {
+        return elem[1]
+    })
+
+    await deleteColumnSheet2(col)
+
+    const inputtedData = [newTaskId, newAtomicTaskId]
+
+    console.log("inputtedData: ", inputtedData)
+    console.log("rawCompletedData: ", rawCompletedData)
+    const arrayEqualsVal = arraysEqual(inputtedData, rawCompletedData)
+
+    if (arrayEqualsVal) {
+        console.log("inputtedData == rawCompletedData", arrayEqualsVal)
+        showToast("Sanity Test Passes", "success", "Sanity Test Passes");
+    } else {
+        showToast("Sanity Test Fails", "error", "Sanity Test Fails");
+    }
+}
+
+function arraysEqual(a, b) {
+    return a.length === b.length && a.every((item, i) => item === b[i]);
+}
+
+async function getEmptyColumns() {
+    console.log("getEmptyColumns")
+    const res = await getEmptyColumnsApi()
+    console.log(res)
+}
+
+async function getEmptyColumnsApi({
+    baseUrl = 'http://localhost:3000',
+    sheetId = '1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc',
+    sheetName = 'Sheet1',
+} = {}) {
+    const url = new URL('/empty-columns', baseUrl);
+    url.searchParams.set('sheet_id', sheetId);
+    url.searchParams.set('sheet_name', sheetName);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+        throw new Error(data.error || `empty-columns failed (${res.status})`);
+    }
+
+    return data;
+}
+
+async function add20ColumnsSheet1() {
+    const res = await addEmptyColumns({
+        count: 20,
+        sheetName: "Sheet1"
+    })
+    console.log(res)
+}
+
+async function addEmptyColumns({
+    sheetId = "1pm6uH4SrOXdML5qp7iatDQBrDHXQltDOzKoB448Soyc",
+    sheetName = "Sheet1",
+    count = 5,
+    baseUrl = "http://localhost:3000",
+} = {}) {
+    const params = new URLSearchParams({
+        sheet_id: sheetId,
+        sheet_name: sheetName,
+        count: String(count),
+    });
+
+    const res = await fetch(`${baseUrl}/add-empty-columns?${params}`);
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`add-empty-columns failed: ${res.status} ${res.statusText}${body ? ` — ${body}` : ""}`);
+    }
+
+    const text = await res.text();
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
 }
